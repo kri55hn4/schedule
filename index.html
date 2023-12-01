@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Task Manager</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Task Manager</h1>
+    <form id="taskForm">
+      <label for="task">Task:</label>
+      <input type="text" id="task" required>
+
+      <label for="dueDate">Due Date:</label>
+      <input type="date" id="dueDate" required>
+
+      <label for="dueTime">Due Time:</label>
+      <input type="time" id="dueTime" required>
+
+      <button type="button" onclick="addTask()">Add Task</button>
+    </form>
+
+    <ul id="taskList"></ul>
+  </div>
+
+  <script src="main.js"></script>
+  <script src="service-worker.js"></script>
+  <script src="push-notification.js"></script>
+</body>
+</html>

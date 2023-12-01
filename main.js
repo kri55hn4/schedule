@@ -19,7 +19,8 @@ function addTask() {
 
   tasks.push(task);
   displayTasks();
-  setupNotifications(task);
+  setupTaskNotifications(task);
+  setupTaskTimeoutNotification(task);
 
   // Clear input fields
   taskInput.value = '';
@@ -48,14 +49,57 @@ function deleteTask(id) {
   displayTasks();
 }
 
-// Function to set up notifications
-function setupNotifications(task) {
-  // Implement push notifications logic here
-  // For example, you can use the Notification API
-  if ('Notification' in window && Notification.permission === 'granted') {
-    const notification = new Notification(`Task Reminder: ${task.task}`, {
-      body: `Due on ${task.dueDate} at ${task.dueTime}`,
+// Function to set up task notifications
+function setupTaskNotifications(task) {
+  // Instant notification for added task
+  setupInstantNotification(`Task Added: ${task.task}`);
+
+  // Set up periodic notifications every 25 minutes
+  setInterval(() => {
+    setupInstantNotification(`Reminder: ${task.task}`);
+  }, 25 * 60 * 1000);
+
+  // Set up notifications as due time approaches
+  setupDueTimeNotifications(task);
+}
+
+// Function to set up notifications as due time approaches
+function setupDueTimeNotifications(task) {
+  const dueDateTime = new Date(`${task.dueDate} ${task.dueTime}`).getTime();
+  const now = new Date().getTime();
+  const timeRemaining = dueDateTime - now;
+
+  if (timeRemaining > 0) {
+    // Notifications at 20, 15, 10, 5 minutes before due time
+    const notificationIntervals = [20, 15, 10, 5];
+
+    notificationIntervals.forEach(interval => {
+      if (timeRemaining > interval * 60 * 1000) {
+        setTimeout(() => {
+          setupInstantNotification(`Due Soon: ${task.task}`);
+        }, timeRemaining - interval * 60 * 1000);
+      }
     });
+  }
+}
+
+// Function to set up a notification after task timeout
+function setupTaskTimeoutNotification(task) {
+  const dueDateTime = new Date(`${task.dueDate} ${task.dueTime}`).getTime();
+  const now = new Date().getTime();
+  const timeRemaining = dueDateTime - now;
+
+  if (timeRemaining > 0) {
+    setTimeout(() => {
+      setupInstantNotification(`Task Timeout: ${task.task}. You didn't complete it on time.`);
+    }, timeRemaining);
+  }
+}
+
+// Function to set up an instant notification
+function setupInstantNotification(message) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const notification = new Notification(message);
   }
 }
 
@@ -64,23 +108,6 @@ if ('Notification' in window) {
   Notification.requestPermission().then(permission => {
     if (permission !== 'granted') {
       console.log('Notifications are not allowed by the user.');
-    } else {
-      // Set up periodic notifications check every 30 minutes
-      setInterval(checkTaskDueDates, 30 * 60 * 1000);
-    }
-  });
-}
-
-// Function to check task due dates and send periodic notifications
-function checkTaskDueDates() {
-  const now = new Date().getTime();
-
-  tasks.forEach(task => {
-    const dueDateTime = new Date(`${task.dueDate} ${task.dueTime}`).getTime();
-
-    // Check if the task is overdue
-    if (now > dueDateTime) {
-      setupNotifications(task);
     }
   });
 }
